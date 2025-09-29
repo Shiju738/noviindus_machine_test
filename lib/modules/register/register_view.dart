@@ -3,19 +3,23 @@ import 'package:get/get.dart';
 import '../../helpers/colors/app_colors.dart';
 import '../../helpers/widgets/app_text_field.dart';
 import '../../helpers/widgets/primary_button.dart';
-import 'register_controller.dart';
+import 'register_controller.dart'; // globals.dart
 
 class RegisterView extends GetView<RegisterController> {
   const RegisterView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    if (!Get.isRegistered<RegisterController>()) {
+      Get.put(RegisterController());
+    }
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(
-            Icons.arrow_back_ios_new,
+            Icons.arrow_back,
             size: 18,
             color: AppColors.textPrimary,
           ),
@@ -33,7 +37,10 @@ class RegisterView extends GetView<RegisterController> {
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 12),
-            child: Icon(Icons.notifications_none, color: AppColors.textPrimary),
+            child: Icon(
+              Icons.notifications_outlined,
+              color: AppColors.textPrimary,
+            ),
           ),
         ],
       ),
@@ -211,7 +218,10 @@ class _DropdownField extends StatelessWidget {
         child: DropdownButtonHideUnderline(
           child: DropdownButton<String>(
             value: value,
-            hint: Text('Select the ${label.toLowerCase()}'),
+            hint: Text(
+              'Select the ${label.toLowerCase()}',
+              style: TextStyle(color: AppColors.borderShade, fontSize: 12),
+            ),
             isExpanded: true,
             items: items
                 .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
@@ -300,7 +310,13 @@ class _Chip extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label),
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: AppColors.primary,
+          ),
+        ),
         const SizedBox(width: 6),
         Obx(
           () => Container(
@@ -337,7 +353,10 @@ class _DateField extends StatelessWidget {
           readOnly: true,
           decoration: InputDecoration(
             hintText: '',
-            suffixIcon: const Icon(Icons.calendar_today),
+            suffixIcon: const Icon(
+              Icons.calendar_month_outlined,
+              color: AppColors.primary,
+            ),
             filled: true,
             fillColor: AppColors.surface,
             border: OutlineInputBorder(
@@ -378,7 +397,12 @@ class _TimeField extends StatelessWidget {
                 readOnly: true,
                 decoration: InputDecoration(
                   hintText: 'Hour',
+                  hintStyle: TextStyle(
+                    color: AppColors.borderShade,
+                    fontSize: 12,
+                  ),
                   filled: true,
+                  suffixIcon: const Icon(Icons.keyboard_arrow_down),
                   fillColor: AppColors.surface,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -404,6 +428,10 @@ class _TimeField extends StatelessWidget {
                 readOnly: true,
                 decoration: InputDecoration(
                   hintText: 'Minutes',
+                  hintStyle: TextStyle(
+                    color: AppColors.borderShade,
+                    fontSize: 12,
+                  ),
                   suffixIcon: const Icon(Icons.keyboard_arrow_down),
                   filled: true,
                   fillColor: AppColors.surface,

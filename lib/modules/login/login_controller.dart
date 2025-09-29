@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
-import '../../routes/app_pages.dart';
 
 class LoginController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -50,7 +49,6 @@ class LoginController extends GetxController {
       // Handle response...
       Get.back();
       Get.snackbar('Success', 'Logged in');
-      Get.offAllNamed(Routes.home);
     } catch (e) {
       Get.back();
       Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);

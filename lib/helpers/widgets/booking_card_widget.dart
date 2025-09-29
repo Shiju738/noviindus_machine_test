@@ -9,7 +9,7 @@ class BookingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.lightGrey2,
         borderRadius: BorderRadius.circular(10),
         boxShadow: const [
           BoxShadow(
@@ -63,12 +63,18 @@ class BookingCard extends StatelessWidget {
                         Row(
                           children: const [
                             Icon(
-                              Icons.picture_as_pdf,
+                              Icons.calendar_month_outlined,
                               size: 16,
                               color: AppColors.danger,
                             ),
                             SizedBox(width: 6),
-                            Text('31/01/2024'),
+                            Text(
+                              '31/01/2024',
+                              style: TextStyle(
+                                color: AppColors.borderShade,
+                                fontSize: 12,
+                              ),
+                            ),
                             SizedBox(width: 16),
                             Icon(
                               Icons.person,
@@ -76,7 +82,13 @@ class BookingCard extends StatelessWidget {
                               color: AppColors.iconMuted,
                             ),
                             SizedBox(width: 6),
-                            Text('Jithesh'),
+                            Text(
+                              'Jithesh',
+                              style: TextStyle(
+                                color: AppColors.borderShade,
+                                fontSize: 12,
+                              ),
+                            ),
                           ],
                         ),
                       ],

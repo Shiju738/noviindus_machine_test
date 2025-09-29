@@ -12,17 +12,17 @@ class HomeView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(
-            Icons.arrow_back_ios_new,
+            Icons.arrow_back,
             size: 18,
             color: AppColors.textPrimary,
           ),
           onPressed: () => Get.back(),
         ),
         backgroundColor: AppColors.surface,
-        elevation: 0,
         title: const Text('', style: TextStyle(color: AppColors.textPrimary)),
         actions: const [
           Padding(
@@ -35,7 +35,7 @@ class HomeView extends GetView<HomeController> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(
                 children: [
                   Expanded(
@@ -76,15 +76,22 @@ class HomeView extends GetView<HomeController> {
                   ),
                   const SizedBox(width: 8),
                   SizedBox(
-                    height: 40,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: AppColors.onPrimary,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                    height: 45,
+                    child: GestureDetector(
+                      onTap: () {},
+                      child: Container(
+                        width: 80,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          color: AppColors.primary,
+                        ),
+                        child: Center(
+                          child: const Text(
+                            'Search',
+                            style: TextStyle(color: AppColors.onPrimary),
+                          ),
+                        ),
                       ),
-                      child: const Text('Search'),
                     ),
                   ),
                 ],
@@ -93,6 +100,7 @@ class HomeView extends GetView<HomeController> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
                     'Sort by :',
@@ -101,26 +109,42 @@ class HomeView extends GetView<HomeController> {
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(width: 12),
                   Obx(
-                    () => DropdownButton<int>(
-                      value: controller.selectedSortIndex.value,
-                      items: List.generate(
-                        controller.sortOptions.length,
-                        (index) => DropdownMenuItem<int>(
-                          value: index,
-                          child: Text(
-                            controller.sortOptions[index],
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
+                    () => Container(
+                      height: 36,
+                      width: 130,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        color: AppColors.surface,
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<int>(
+                          value: controller.selectedSortIndex.value,
+                          items: List.generate(
+                            controller.sortOptions.length,
+                            (index) => DropdownMenuItem<int>(
+                              value: index,
+                              child: Text(
+                                controller.sortOptions[index],
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
                             ),
                           ),
+                          onChanged: (value) {
+                            if (value != null) controller.setSort(value);
+                          },
+                          icon: const Icon(
+                            Icons.keyboard_arrow_down,
+                            color: AppColors.primary,
+                            size: 20,
+                          ),
+                          isExpanded: true,
                         ),
                       ),
-                      onChanged: (value) {
-                        if (value != null) controller.setSort(value);
-                      },
-                      underline: const SizedBox.shrink(),
                     ),
                   ),
                 ],

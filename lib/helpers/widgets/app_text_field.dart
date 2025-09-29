@@ -32,6 +32,7 @@ class AppTextField extends StatelessWidget {
             Text(label, style: Theme.of(context).textTheme.bodyMedium),
           ],
         ),
+        const SizedBox(height: 6),
         TextFormField(
           controller: controller,
           validator: validator,
@@ -39,6 +40,7 @@ class AppTextField extends StatelessWidget {
           keyboardType: keyboardType,
           decoration: InputDecoration(
             hintText: hint,
+            hintStyle: TextStyle(color: AppColors.borderShade, fontSize: 12),
             filled: true,
             fillColor: AppColors.fieldFill,
             contentPadding: const EdgeInsets.symmetric(
