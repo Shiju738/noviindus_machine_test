@@ -1,3 +1,4 @@
+import 'package:app/modules/register/register_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../helpers/colors/app_colors.dart';
@@ -25,10 +26,6 @@ class HomeView extends GetView<HomeController> {
         backgroundColor: AppColors.surface,
         title: const Text('', style: TextStyle(color: AppColors.textPrimary)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: AppColors.textPrimary),
-            onPressed: () => controller.fetchBookingList(isRefresh: true),
-          ),
           const Padding(
             padding: EdgeInsets.only(right: 12.0),
             child: Icon(Icons.notifications_none, color: AppColors.textPrimary),
@@ -271,7 +268,11 @@ class HomeView extends GetView<HomeController> {
         minimum: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
         child: PrimaryButton(
           label: 'Register Now',
-          onPressed: () => Get.toNamed(Routes.register),
+          onPressed: () {
+            Get.toNamed(Routes.register);
+            Get.find<RegisterController>().fetchBranchList();
+            Get.find<RegisterController>().fetchTreatmentList();
+          },
           padding: const EdgeInsets.symmetric(vertical: 14),
         ),
       ),

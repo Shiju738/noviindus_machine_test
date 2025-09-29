@@ -9,6 +9,8 @@ class AppTextField extends StatelessWidget {
   final bool obscureText;
   final Widget? suffixIcon;
   final TextInputType? keyboardType;
+  final String? errorText;
+  final Function(String)? onChanged;
 
   const AppTextField({
     super.key,
@@ -19,6 +21,8 @@ class AppTextField extends StatelessWidget {
     this.obscureText = false,
     this.suffixIcon,
     this.keyboardType,
+    this.errorText,
+    this.onChanged,
   });
 
   @override
@@ -38,6 +42,7 @@ class AppTextField extends StatelessWidget {
           validator: validator,
           obscureText: obscureText,
           keyboardType: keyboardType,
+          onChanged: onChanged,
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(color: AppColors.borderShade, fontSize: 12),
@@ -49,19 +54,33 @@ class AppTextField extends StatelessWidget {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(
+                color: errorText != null ? Colors.red : AppColors.border,
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(
+                color: errorText != null ? Colors.red : AppColors.border,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: AppColors.primary, width: 1.2),
+              borderSide: BorderSide(
+                color: errorText != null ? Colors.red : AppColors.primary,
+                width: 1.2,
+              ),
             ),
             suffixIcon: suffixIcon,
           ),
         ),
+        if (errorText != null && errorText!.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            errorText!,
+            style: const TextStyle(color: Colors.red, fontSize: 12),
+          ),
+        ],
       ],
     );
   }

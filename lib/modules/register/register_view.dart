@@ -14,6 +14,14 @@ class RegisterView extends GetView<RegisterController> {
       Get.put(RegisterController());
     }
 
+    // Ensure controller is initialized
+    final controller = Get.find<RegisterController>();
+
+    // Trigger initialization if not already started
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.startInitialization();
+    });
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
@@ -34,160 +42,301 @@ class RegisterView extends GetView<RegisterController> {
             fontWeight: FontWeight.w700,
           ),
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 12),
-            child: Icon(
-              Icons.notifications_outlined,
-              color: AppColors.textPrimary,
+        actions: [
+          GestureDetector(
+            onTap: () => controller.fetchTreatmentList(),
+            child: Padding(
+              padding: EdgeInsets.only(right: 12),
+              child: Icon(
+                Icons.notifications_outlined,
+                color: AppColors.textPrimary,
+              ),
             ),
           ),
         ],
       ),
       body: SafeArea(
-        child: Form(
-          key: controller.formKey,
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              AppTextField(
-                controller: controller.nameController,
-                label: 'Name',
-                hint: 'Enter your full name',
-                validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              AppTextField(
-                controller: controller.whatsappController,
-                label: 'Whatsapp Number',
-                hint: 'Enter your Whatsapp number',
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 12),
-              AppTextField(
-                controller: controller.addressController,
-                label: 'Address',
-                hint: 'Enter your full address',
-              ),
-              const SizedBox(height: 12),
-
-              _DropdownField(
-                label: 'Location',
-                items: controller.locations,
-                selected: controller.selectedLocation,
-                onChanged: (v) => controller.selectedLocation.value = v,
-              ),
-              const SizedBox(height: 12),
-              _DropdownField(
-                label: 'Branch',
-                items: controller.branches,
-                selected: controller.selectedBranch,
-                onChanged: (v) => controller.selectedBranch.value = v,
-              ),
-              const SizedBox(height: 12),
-
-              const Text(
-                'Treatments',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _TreatmentCard(controller: controller),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 44,
-                child: ElevatedButton(
-                  onPressed: () => _showAddTreatmentSheet(context, controller),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.lightGreen,
-                    foregroundColor: AppColors.onPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+        child: Obx(() {
+          if (controller.isScreenLoading.value) {
+            return _buildLoadingScreen();
+          }
+          return Form(
+            key: controller.formKey,
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                Obx(
+                  () => AppTextField(
+                    controller: controller.nameController,
+                    label: 'Name',
+                    hint: 'Enter your full name',
+                    errorText: controller.nameError.value.isNotEmpty
+                        ? controller.nameError.value
+                        : null,
+                    onChanged: (value) {
+                      if (value.isNotEmpty) {
+                        controller.clearNameError();
+                      }
+                    },
                   ),
-                  child: const Text('+ Add Treatments'),
                 ),
-              ),
-
-              const SizedBox(height: 16),
-              AppTextField(
-                controller: controller.totalAmountController,
-                label: 'Total Amount',
-                hint: '',
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              AppTextField(
-                controller: controller.discountAmountController,
-                label: 'Discount Amount',
-                hint: '',
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-
-              const Text(
-                'Payment Option',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                const SizedBox(height: 12),
+                Obx(
+                  () => AppTextField(
+                    controller: controller.whatsappController,
+                    label: 'Whatsapp Number',
+                    hint: 'Enter your Whatsapp number',
+                    keyboardType: TextInputType.phone,
+                    errorText: controller.phoneError.value.isNotEmpty
+                        ? controller.phoneError.value
+                        : null,
+                    onChanged: (value) {
+                      if (value.isNotEmpty) {
+                        controller.clearPhoneError();
+                      }
+                    },
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Obx(
-                () => Row(
-                  children: [
-                    Radio<String>(
-                      value: 'Cash',
-                      groupValue: controller.paymentMethod.value,
-                      onChanged: (v) => controller.paymentMethod.value = v!,
-                    ),
-                    const Text('Cash'),
-                    const SizedBox(width: 12),
-                    Radio<String>(
-                      value: 'Card',
-                      groupValue: controller.paymentMethod.value,
-                      onChanged: (v) => controller.paymentMethod.value = v!,
-                    ),
-                    const Text('Card'),
-                    const SizedBox(width: 12),
-                    Radio<String>(
-                      value: 'UPI',
-                      groupValue: controller.paymentMethod.value,
-                      onChanged: (v) => controller.paymentMethod.value = v!,
-                    ),
-                    const Text('UPI'),
+                const SizedBox(height: 12),
+                Obx(
+                  () => AppTextField(
+                    controller: controller.addressController,
+                    label: 'Address',
+                    hint: 'Enter your full address',
+                    errorText: controller.addressError.value.isNotEmpty
+                        ? controller.addressError.value
+                        : null,
+                    onChanged: (value) {
+                      if (value.isNotEmpty) {
+                        controller.clearAddressError();
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                _DropdownField(
+                  label: 'Location',
+                  items: const [
+                    'Kochi',
+                    'Trivandrum',
+                    'Calicut',
+                    'Kozhikode',
+                    'Thiruvananthapuram',
+                    'Kollam',
+                    'Alappuzha',
+                    'Kottayam',
+                    'Idukki',
+                    'Ernakulam',
+                    'Thrissur',
+                    'Palakkad',
+                    'Malappuram',
+                    'Wayanad',
+                    'Kannur',
+                    'Kasaragod',
                   ],
+                  selected: controller.selectedLocation,
+                  onChanged: (v) {
+                    controller.selectedLocation.value = v;
+                  },
                 ),
-              ),
 
-              const SizedBox(height: 12),
-              AppTextField(
-                controller: controller.advanceAmountController,
-                label: 'Advance Amount',
-                hint: '',
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 12),
-              AppTextField(
-                controller: controller.balanceAmountController,
-                label: 'Balance Amount',
-                hint: '',
-                keyboardType: TextInputType.number,
-              ),
+                const SizedBox(height: 12),
+                Obx(
+                  () => _DropdownField(
+                    label: 'Branch',
+                    items: controller.branches
+                        .map((branch) => branch.name)
+                        .toList(),
+                    selected: controller.selectedBranch,
+                    onChanged: (v) {
+                      controller.selectedBranch.value = v;
+                      // Clear error when user selects a branch
+                      if (v != null && v.isNotEmpty) {
+                        controller.branchError.value = '';
+                      }
+                    },
+                    isLoading: controller.isLoadingBranches.value,
+                    error: controller.branchError.value.isNotEmpty
+                        ? controller.branchError.value
+                        : null,
+                  ),
+                ),
+                const SizedBox(height: 12),
 
-              const SizedBox(height: 12),
-              const _DateField(),
-              const SizedBox(height: 12),
-              const _TimeField(),
+                const Text(
+                  'Treatments',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Obx(
+                  () => Column(
+                    children: [
+                      _TreatmentCard(controller: controller),
+                      if (controller.treatmentError.value.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          controller.treatmentError.value,
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 44,
+                  child: ElevatedButton(
+                    onPressed: () =>
+                        _showAddTreatmentSheet(context, controller),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.lightGreen,
+                      foregroundColor: AppColors.onPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('+ Add Treatments'),
+                  ),
+                ),
 
-              const SizedBox(height: 16),
-              PrimaryButton(label: 'Save', onPressed: controller.submit),
-              const SizedBox(height: 8),
-            ],
+                const SizedBox(height: 16),
+                Obx(
+                  () => AppTextField(
+                    controller: controller.totalAmountController,
+                    label: 'Total Amount',
+                    hint: '',
+                    keyboardType: TextInputType.number,
+                    errorText: controller.totalAmountError.value.isNotEmpty
+                        ? controller.totalAmountError.value
+                        : null,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Obx(
+                  () => AppTextField(
+                    controller: controller.discountAmountController,
+                    label: 'Discount Amount',
+                    hint: '',
+                    keyboardType: TextInputType.number,
+                    errorText: controller.discountAmountError.value.isNotEmpty
+                        ? controller.discountAmountError.value
+                        : null,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                const Text(
+                  'Payment Option',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Obx(
+                  () => Row(
+                    children: [
+                      Radio<String>(
+                        value: 'Cash',
+                        groupValue: controller.paymentMethod.value,
+                        onChanged: (v) => controller.paymentMethod.value = v!,
+                      ),
+                      const Text('Cash'),
+                      const SizedBox(width: 12),
+                      Radio<String>(
+                        value: 'Card',
+                        groupValue: controller.paymentMethod.value,
+                        onChanged: (v) => controller.paymentMethod.value = v!,
+                      ),
+                      const Text('Card'),
+                      const SizedBox(width: 12),
+                      Radio<String>(
+                        value: 'UPI',
+                        groupValue: controller.paymentMethod.value,
+                        onChanged: (v) => controller.paymentMethod.value = v!,
+                      ),
+                      const Text('UPI'),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+                Obx(
+                  () => AppTextField(
+                    controller: controller.advanceAmountController,
+                    label: 'Advance Amount',
+                    hint: '',
+                    keyboardType: TextInputType.number,
+                    errorText: controller.advanceAmountError.value.isNotEmpty
+                        ? controller.advanceAmountError.value
+                        : null,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Obx(
+                  () => AppTextField(
+                    controller: controller.balanceAmountController,
+                    label: 'Balance Amount',
+                    hint: '',
+                    keyboardType: TextInputType.number,
+                    errorText: controller.balanceAmountError.value.isNotEmpty
+                        ? controller.balanceAmountError.value
+                        : null,
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+                const _DateField(),
+                const SizedBox(height: 12),
+                const _TimeField(),
+
+                const SizedBox(height: 16),
+                Obx(
+                  () => PrimaryButton(
+                    label: controller.isSubmitting.value ? 'Saving...' : 'Save',
+                    onPressed: controller.isSubmitting.value
+                        ? null
+                        : controller.submit,
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  // Loading screen widget
+  Widget _buildLoadingScreen() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(color: AppColors.primary),
+          const SizedBox(height: 16),
+          Text(
+            'Loading register form...',
+            style: TextStyle(
+              fontSize: 16,
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
+          const SizedBox(height: 8),
+          Text(
+            'Fetching branch and treatment data',
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+          ),
+        ],
       ),
     );
   }
@@ -198,11 +347,16 @@ class _DropdownField extends StatelessWidget {
   final List<String> items;
   final RxnString? selected;
   final ValueChanged<String?>? onChanged;
+  final bool isLoading;
+  final String? error;
+
   const _DropdownField({
     required this.label,
     this.items = const [],
     this.selected,
     this.onChanged,
+    this.isLoading = false,
+    this.error,
   });
 
   @override
@@ -213,21 +367,34 @@ class _DropdownField extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(
+            color: error != null ? Colors.red : AppColors.border,
+          ),
         ),
         child: DropdownButtonHideUnderline(
           child: DropdownButton<String>(
             value: value,
             hint: Text(
-              'Select the ${label.toLowerCase()}',
-              style: TextStyle(color: AppColors.borderShade, fontSize: 12),
+              isLoading
+                  ? 'Loading ${label.toLowerCase()}...'
+                  : 'Select the ${label.toLowerCase()}',
+              style: TextStyle(
+                color: error != null ? Colors.red : AppColors.borderShade,
+                fontSize: 12,
+              ),
             ),
             isExpanded: true,
             items: items
                 .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
                 .toList(),
-            onChanged: onChanged,
-            icon: const Icon(Icons.keyboard_arrow_down),
+            onChanged: isLoading ? null : onChanged,
+            icon: isLoading
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.keyboard_arrow_down),
           ),
         ),
       );
@@ -241,6 +408,10 @@ class _DropdownField extends StatelessWidget {
         selected == null
             ? buildDropdown(null)
             : Obx(() => buildDropdown(selected!.value)),
+        if (error != null) ...[
+          const SizedBox(height: 4),
+          Text(error!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+        ],
       ],
     );
   }
@@ -252,51 +423,89 @@ class _TreatmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.lightGrey,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 8,
-            offset: Offset(0, 2),
+    return Obx(() {
+      if (controller.selectedTreatments.isEmpty) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.lightGrey,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.border),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
-              children: const [
-                Text(
-                  '1.  Couple Combo package L...',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+          child: const Center(
+            child: Text(
+              'No treatments selected',
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+            ),
+          ),
+        );
+      }
+
+      return Column(
+        children: controller.selectedTreatments.asMap().entries.map((entry) {
+          final index = entry.key;
+          final treatment = entry.value;
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: AppColors.lightGrey,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: const [
+                BoxShadow(
+                  color: AppColors.shadow,
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
                 ),
-                Spacer(),
-                Icon(Icons.close, color: AppColors.danger, size: 18),
               ],
             ),
-          ),
-          const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _Chip(label: 'Male', value: controller.maleCount),
-                const SizedBox(width: 8),
-                _Chip(label: 'Female', value: controller.femaleCount),
-                const SizedBox(width: 8),
-                Icon(Icons.edit, color: AppColors.primary, size: 18),
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${index + 1}. ${treatment.name}',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                      const Spacer(),
+                      GestureDetector(
+                        onTap: () => controller.removeTreatment(index),
+                        child: const Icon(
+                          Icons.close,
+                          color: AppColors.danger,
+                          size: 18,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _Chip(label: 'Male', value: controller.maleCount),
+                      const SizedBox(width: 8),
+                      _Chip(label: 'Female', value: controller.femaleCount),
+                      const SizedBox(width: 8),
+                      Icon(Icons.edit, color: AppColors.primary, size: 18),
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
+          );
+        }).toList(),
+      );
+    });
   }
 }
 
@@ -344,34 +553,43 @@ class _DateField extends StatelessWidget {
   const _DateField();
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<RegisterController>();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Treatment Date', style: Theme.of(context).textTheme.bodyMedium),
         const SizedBox(height: 6),
-        TextField(
-          readOnly: true,
-          decoration: InputDecoration(
-            hintText: '',
-            suffixIcon: const Icon(
-              Icons.calendar_month_outlined,
-              color: AppColors.primary,
-            ),
-            filled: true,
-            fillColor: AppColors.surface,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(
-                color: AppColors.primary,
-                width: 1.2,
+        Obx(
+          () => GestureDetector(
+            onTap: () => controller.selectDate(context),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      controller.selectedDate.value != null
+                          ? '${controller.selectedDate.value!.day.toString().padLeft(2, '0')}/${controller.selectedDate.value!.month.toString().padLeft(2, '0')}/${controller.selectedDate.value!.year}'
+                          : 'Select treatment date',
+                      style: TextStyle(
+                        color: controller.selectedDate.value != null
+                            ? Colors.black
+                            : AppColors.borderShade,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  const Icon(
+                    Icons.calendar_month_outlined,
+                    color: AppColors.primary,
+                  ),
+                ],
               ),
             ),
           ),
@@ -483,36 +701,29 @@ void _showAddTreatmentSheet(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Choose Treatment',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+            GestureDetector(
+              onTap: () => controller.fetchTreatmentList(),
+              child: const Text(
+                'Choose Treatment',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
               ),
             ),
             const SizedBox(height: 8),
-            TextField(
-              readOnly: true,
-              decoration: InputDecoration(
-                hintText: 'Choose prefered treatment',
-                suffixIcon: const Icon(Icons.keyboard_arrow_down),
-                filled: true,
-                fillColor: AppColors.surface,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: AppColors.border),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: AppColors.border),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(
-                    color: AppColors.primary,
-                    width: 1.2,
-                  ),
-                ),
+            Obx(
+              () => _DropdownField(
+                label: 'Treatment',
+                items: controller.treatments
+                    .map((treatment) => treatment.name)
+                    .toList(),
+                selected: controller.selectedTreatment,
+                onChanged: (v) => controller.selectedTreatment.value = v,
+                isLoading: controller.isLoadingTreatments.value,
+                error: controller.treatmentError.value.isNotEmpty
+                    ? controller.treatmentError.value
+                    : null,
               ),
             ),
             const SizedBox(height: 16),
@@ -539,8 +750,9 @@ void _showAddTreatmentSheet(
             ),
             const SizedBox(height: 20),
             PrimaryButton(
-              label: 'Save',
+              label: 'Add Treatment',
               onPressed: () {
+                controller.addSelectedTreatment();
                 Get.back();
               },
             ),
