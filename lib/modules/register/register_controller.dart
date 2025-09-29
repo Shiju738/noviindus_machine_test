@@ -18,6 +18,16 @@ class RegisterController extends GetxController {
 
   final RxString paymentMethod = 'Cash'.obs;
 
+  // Dummy dropdown data
+  final List<String> locations = const ['Kochi', 'Trivandrum', 'Calicut'];
+  final List<String> branches = const [
+    'Main Branch',
+    'City Center',
+    'North Wing',
+  ];
+  final RxnString selectedLocation = RxnString();
+  final RxnString selectedBranch = RxnString();
+
   void incrementMale() => maleCount.value++;
   void decrementMale() {
     if (maleCount.value > 0) maleCount.value--;

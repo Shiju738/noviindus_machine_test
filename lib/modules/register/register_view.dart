@@ -64,9 +64,19 @@ class RegisterView extends GetView<RegisterController> {
               ),
               const SizedBox(height: 12),
 
-              const _DropdownField(label: 'Location'),
+              _DropdownField(
+                label: 'Location',
+                items: controller.locations,
+                selected: controller.selectedLocation,
+                onChanged: (v) => controller.selectedLocation.value = v,
+              ),
               const SizedBox(height: 12),
-              const _DropdownField(label: 'Branch'),
+              _DropdownField(
+                label: 'Branch',
+                items: controller.branches,
+                selected: controller.selectedBranch,
+                onChanged: (v) => controller.selectedBranch.value = v,
+              ),
               const SizedBox(height: 12),
 
               const Text(
@@ -178,39 +188,49 @@ class RegisterView extends GetView<RegisterController> {
 
 class _DropdownField extends StatelessWidget {
   final String label;
-  const _DropdownField({required this.label});
+  final List<String> items;
+  final RxnString? selected;
+  final ValueChanged<String?>? onChanged;
+  const _DropdownField({
+    required this.label,
+    this.items = const [],
+    this.selected,
+    this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
+    Widget buildDropdown(String? value) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: value,
+            hint: Text('Select the ${label.toLowerCase()}'),
+            isExpanded: true,
+            items: items
+                .map((e) => DropdownMenuItem<String>(value: e, child: Text(e)))
+                .toList(),
+            onChanged: onChanged,
+            icon: const Icon(Icons.keyboard_arrow_down),
+          ),
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: Theme.of(context).textTheme.bodyMedium),
         const SizedBox(height: 6),
-        TextField(
-          readOnly: true,
-          decoration: InputDecoration(
-            hintText: 'Select the $label.toLowerCase()',
-            suffixIcon: const Icon(Icons.keyboard_arrow_down),
-            filled: true,
-            fillColor: AppColors.surface,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(
-                color: AppColors.primary,
-                width: 1.2,
-              ),
-            ),
-          ),
-        ),
+        selected == null
+            ? buildDropdown(null)
+            : Obx(() => buildDropdown(selected!.value)),
       ],
     );
   }
@@ -224,7 +244,7 @@ class _TreatmentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.lightGrey,
         borderRadius: BorderRadius.circular(8),
         boxShadow: const [
           BoxShadow(
@@ -247,8 +267,6 @@ class _TreatmentCard extends StatelessWidget {
                 ),
                 Spacer(),
                 Icon(Icons.close, color: AppColors.danger, size: 18),
-                SizedBox(width: 8),
-                Icon(Icons.edit, color: AppColors.textPrimary, size: 18),
               ],
             ),
           ),
@@ -256,10 +274,13 @@ class _TreatmentCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _Chip(label: 'Male', value: controller.maleCount),
                 const SizedBox(width: 8),
                 _Chip(label: 'Female', value: controller.femaleCount),
+                const SizedBox(width: 8),
+                Icon(Icons.edit, color: AppColors.primary, size: 18),
               ],
             ),
           ),
@@ -276,29 +297,29 @@ class _Chip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.fieldFill,
-        borderRadius: BorderRadius.circular(100),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      child: Row(
-        children: [
-          Text(label),
-          const SizedBox(width: 6),
-          Obx(
-            () => CircleAvatar(
-              radius: 10,
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.onPrimary,
-              child: Text(
-                '${value.value}',
-                style: const TextStyle(fontSize: 12),
-              ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label),
+        const SizedBox(width: 6),
+        Obx(
+          () => Container(
+            width: 30,
+            height: 30,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.lightGrey,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: AppColors.border),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            child: Text(
+              '${value.value}',
+              style: const TextStyle(fontSize: 12, color: AppColors.primary),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -418,6 +439,7 @@ void _showAddTreatmentSheet(
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    backgroundColor: AppColors.background,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
