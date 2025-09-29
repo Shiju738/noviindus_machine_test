@@ -44,8 +44,9 @@ class HomeView extends GetView<HomeController> {
                 children: [
                   Expanded(
                     child: TextField(
+                      onChanged: (value) => controller.searchBookings(value),
                       decoration: InputDecoration(
-                        hintText: 'Search for treatments',
+                        hintText: 'Search by name or treatment',
                         prefixIcon: const Icon(
                           Icons.search,
                           color: AppColors.textSecondary,
@@ -82,7 +83,9 @@ class HomeView extends GetView<HomeController> {
                   SizedBox(
                     height: 45,
                     child: GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        controller.searchBookings(''); // Clear search
+                      },
                       child: Container(
                         width: 80,
                         decoration: BoxDecoration(
@@ -91,7 +94,7 @@ class HomeView extends GetView<HomeController> {
                         ),
                         child: Center(
                           child: const Text(
-                            'Search',
+                            'Clear',
                             style: TextStyle(color: AppColors.onPrimary),
                           ),
                         ),
@@ -219,8 +222,8 @@ class HomeView extends GetView<HomeController> {
                     );
                   }
 
-                  if (controller.bookings.isEmpty) {
-                    return const Center(
+                  if (controller.filteredBookings.isEmpty) {
+                    return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -231,8 +234,10 @@ class HomeView extends GetView<HomeController> {
                           ),
                           SizedBox(height: 16),
                           Text(
-                            'No bookings found',
-                            style: TextStyle(
+                            controller.searchQuery.value.isNotEmpty
+                                ? 'No bookings match your search'
+                                : 'No bookings found',
+                            style: const TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 16,
                             ),
@@ -245,7 +250,7 @@ class HomeView extends GetView<HomeController> {
                   return ListView.separated(
                     padding: const EdgeInsets.all(16),
                     itemBuilder: (context, index) {
-                      final booking = controller.bookings[index];
+                      final booking = controller.filteredBookings[index];
                       return BookingCardWidget(
                         booking: booking,
                         onTap: () {
@@ -254,7 +259,7 @@ class HomeView extends GetView<HomeController> {
                       );
                     },
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemCount: controller.bookings.length,
+                    itemCount: controller.filteredBookings.length,
                   );
                 }),
               ),
