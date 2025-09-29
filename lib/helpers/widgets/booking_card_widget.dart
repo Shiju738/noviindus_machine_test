@@ -1,9 +1,13 @@
 import 'package:app/helpers/colors/app_colors.dart';
+import 'package:app/helpers/widgets/format.dart';
+import 'package:app/models/patient_model.dart';
 import 'package:flutter/material.dart';
 
-class BookingCard extends StatelessWidget {
-  final int index;
-  const BookingCard({super.key, required this.index});
+class BookingCardWidget extends StatelessWidget {
+  final PatientModel booking;
+  final VoidCallback? onTap;
+
+  const BookingCardWidget({super.key, required this.booking, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -30,18 +34,22 @@ class BookingCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      '$index.',
+                      '1',
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Text(
-                      'Vikram Singh',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                    Expanded(
+                      child: Text(
+                        booking.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
                     ),
                   ],
@@ -50,48 +58,58 @@ class BookingCard extends StatelessWidget {
                 Row(
                   children: [
                     const SizedBox(width: 15),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Couple Combo Package (Rejuvenation...)',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: AppColors.lightGreen),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: const [
-                            Icon(
-                              Icons.calendar_month_outlined,
-                              size: 16,
-                              color: AppColors.danger,
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              '31/01/2024',
-                              style: TextStyle(
-                                color: AppColors.borderShade,
-                                fontSize: 12,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            booking.treatmentName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: AppColors.lightGreen),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.calendar_month_outlined,
+                                size: 16,
+                                color: AppColors.danger,
                               ),
-                            ),
-                            SizedBox(width: 16),
-                            Icon(
-                              Icons.person,
-                              size: 16,
-                              color: AppColors.iconMuted,
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              'Jithesh',
-                              style: TextStyle(
-                                color: AppColors.borderShade,
-                                fontSize: 12,
+                              SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  Format.formatDate(booking.createdAt),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: AppColors.borderShade,
+                                    fontSize: 12,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                              SizedBox(width: 16),
+                              Icon(
+                                Icons.person,
+                                size: 16,
+                                color: AppColors.iconMuted,
+                              ),
+                              SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  Format.formatFirstName(booking.name),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: AppColors.borderShade,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

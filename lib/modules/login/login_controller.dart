@@ -38,33 +38,15 @@ class LoginController extends GetxController {
       );
 
       if (result['success']) {
-        Get.snackbar(
-          'Success',
-          result['message'] ?? 'Login successful',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+        log('Login successful');
         // Navigate to home page which will automatically fetch patient list
         Get.offAllNamed('/home');
       } else {
-        Get.snackbar(
-          'Error',
-          result['message'] ?? 'Login failed',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        log('Login failed: ${result['message'] ?? 'Login failed'}');
       }
     } catch (e) {
       log('Error: $e');
-      Get.snackbar(
-        'Error',
-        'An unexpected error occurred: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      log('An unexpected error occurred: ${e.toString()}');
     } finally {
       isLoading.value = false;
     }

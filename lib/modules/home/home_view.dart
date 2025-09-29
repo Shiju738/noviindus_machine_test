@@ -1,8 +1,8 @@
-import 'package:app/helpers/widgets/booking_card_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../helpers/colors/app_colors.dart';
 import '../../helpers/widgets/primary_button.dart';
+import '../../helpers/widgets/booking_card_widget.dart';
 import 'home_controller.dart';
 import '../../routes/app_pages.dart';
 
@@ -24,8 +24,12 @@ class HomeView extends GetView<HomeController> {
         ),
         backgroundColor: AppColors.surface,
         title: const Text('', style: TextStyle(color: AppColors.textPrimary)),
-        actions: const [
-          Padding(
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: AppColors.textPrimary),
+            onPressed: () => controller.fetchBookingList(isRefresh: true),
+          ),
+          const Padding(
             padding: EdgeInsets.only(right: 12.0),
             child: Icon(Icons.notifications_none, color: AppColors.textPrimary),
           ),
@@ -152,11 +156,107 @@ class HomeView extends GetView<HomeController> {
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.all(16),
-                itemBuilder: (context, index) => BookingCard(index: index + 1),
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemCount: 6,
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await controller.fetchBookingList(isRefresh: true);
+                },
+                color: AppColors.primary,
+                backgroundColor: AppColors.surface,
+                child: Obx(() {
+                  if (controller.isLoading.value) {
+                    return const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(color: AppColors.primary),
+                          SizedBox(height: 16),
+                          Text(
+                            'Loading bookings...',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 16,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'This may take up to 2 minutes',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  if (controller.errorMessage.value.isNotEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: Colors.red[300],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            controller.errorMessage.value,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 16,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () => controller.fetchBookingList(),
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  if (controller.bookings.isEmpty) {
+                    return const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.book_online_outlined,
+                            size: 64,
+                            color: AppColors.textSecondary,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'No bookings found',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemBuilder: (context, index) {
+                      final booking = controller.bookings[index];
+                      return BookingCardWidget(
+                        booking: booking,
+                        onTap: () {
+                          // Handle booking card tap
+                        },
+                      );
+                    },
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemCount: controller.bookings.length,
+                  );
+                }),
               ),
             ),
           ],

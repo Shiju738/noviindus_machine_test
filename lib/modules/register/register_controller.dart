@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -40,7 +42,7 @@ class RegisterController extends GetxController {
 
   void submit() {
     if (!(formKey.currentState?.validate() ?? false)) return;
-    Get.snackbar('Saved', 'Registration saved');
+    log('Registration saved');
   }
 
   @override
