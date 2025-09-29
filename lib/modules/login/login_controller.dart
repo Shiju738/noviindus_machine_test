@@ -1,28 +1,18 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:dio/dio.dart';
+import '../../services/auth_service.dart';
 
 class LoginController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  final TextEditingController emailController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final RxBool isPasswordHidden = true.obs;
-  late final Dio dioClient;
+  final RxBool isLoading = false.obs;
 
-  @override
-  void onInit() {
-    super.onInit();
-    dioClient = Dio(
-      BaseOptions(
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
-      ),
-    );
-  }
-
-  String? validateEmail(String? value) {
-    if (value == null || value.isEmpty) return 'Enter email';
-    if (!value.contains('@')) return 'Invalid email';
+  String? validateUsername(String? value) {
+    if (value == null || value.isEmpty) return 'Enter username';
     return null;
   }
 
@@ -38,26 +28,51 @@ class LoginController extends GetxController {
   Future<void> submit() async {
     if (!(formKey.currentState?.validate() ?? false)) return;
     Get.focusScope?.unfocus();
+
+    isLoading.value = true;
+
     try {
-      Get.dialog(
-        const Center(child: CircularProgressIndicator()),
-        barrierDismissible: false,
+      final result = await AuthService.login(
+        username: usernameController.text.trim(),
+        password: passwordController.text,
       );
-      await Future<void>.delayed(const Duration(seconds: 1));
-      // Example request (replace with real API):
-      // final response = await dioClient.post('https://example.com/login', data: {'email': emailController.text, 'password': passwordController.text});
-      // Handle response...
-      Get.back();
-      Get.snackbar('Success', 'Logged in');
+
+      if (result['success']) {
+        Get.snackbar(
+          'Success',
+          result['message'] ?? 'Login successful',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+        // Navigate to home page which will automatically fetch patient list
+        Get.offAllNamed('/home');
+      } else {
+        Get.snackbar(
+          'Error',
+          result['message'] ?? 'Login failed',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
     } catch (e) {
-      Get.back();
-      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.BOTTOM);
+      log('Error: $e');
+      Get.snackbar(
+        'Error',
+        'An unexpected error occurred: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
     }
   }
 
   @override
   void onClose() {
-    emailController.dispose();
+    usernameController.dispose();
     passwordController.dispose();
     super.onClose();
   }

@@ -14,7 +14,7 @@ class SplashView extends GetView<SplashController> {
         future: controller.initialize(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            Future.microtask(() => Get.offAllNamed(Routes.home));
+            Future.microtask(() => Get.offAllNamed(Routes.login));
           }
           return SizedBox.expand(
             child: Image.asset(ImagePaths.splash, fit: BoxFit.cover),
