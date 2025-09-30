@@ -8,6 +8,8 @@ import '../../models/treatment_model.dart';
 import '../../services/branch_service.dart';
 import '../../services/treatment_service.dart';
 import '../../services/patient_update_service.dart';
+import '../../services/pdf_service.dart';
+import '../../helpers/widgets/pdf_viewer_widget.dart';
 
 class RegisterController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -419,8 +421,8 @@ class RegisterController extends GetxController {
           duration: const Duration(seconds: 3),
         );
 
-        // TODO: Generate PDF
-        // TODO: Navigate to success page or clear form
+        // Generate PDF
+        await _generatePatientBookingPDF();
       } else {
         log('❌ Patient registration failed: ${result['message']}');
         Get.snackbar(
@@ -442,6 +444,82 @@ class RegisterController extends GetxController {
       );
     } finally {
       isSubmitting.value = false;
+    }
+  }
+
+  // Generate PDF for patient booking
+  Future<void> _generatePatientBookingPDF() async {
+    try {
+      log('Generating PDF for patient booking...');
+
+      // Get current date and time for booking
+      final now = DateTime.now();
+      final bookingDate =
+          '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year} | ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}${now.hour >= 12 ? 'pm' : 'am'}';
+
+      // Get treatment date and time
+      final selectedDateValue = selectedDate.value ?? DateTime.now();
+      final treatmentDate =
+          '${selectedDateValue.day.toString().padLeft(2, '0')}/${selectedDateValue.month.toString().padLeft(2, '0')}/${selectedDateValue.year}';
+      final treatmentTime =
+          '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}${now.hour >= 12 ? 'pm' : 'am'}';
+
+      // Get selected branch
+      final selectedBranchName = selectedBranch.value!;
+      final selectedBranchModel = branches.firstWhere(
+        (b) => b.name == selectedBranchName,
+        orElse: () => BranchModel(
+          id: 0,
+          name: selectedBranchName,
+          location: '',
+          phone: '',
+          email: '',
+          address: '',
+          gst: '',
+          isActive: true,
+          patientsCount: 0,
+        ),
+      );
+
+      // Generate PDF bytes (simpler approach)
+      final pdfBytes = await PdfService.generatePatientBookingPDFBytes(
+        patientName: nameController.text.trim(),
+        patientAddress: addressController.text.trim(),
+        patientPhone: whatsappController.text.trim(),
+        bookingDate: bookingDate,
+        treatmentDate: treatmentDate,
+        treatmentTime: treatmentTime,
+        branch: selectedBranchModel,
+        treatments: selectedTreatments,
+        maleCount: maleCount.value,
+        femaleCount: femaleCount.value,
+        totalAmount: double.tryParse(totalAmountController.text.trim()) ?? 0.0,
+        discountAmount:
+            double.tryParse(discountAmountController.text.trim()) ?? 0.0,
+        advanceAmount:
+            double.tryParse(advanceAmountController.text.trim()) ?? 0.0,
+        balanceAmount:
+            double.tryParse(balanceAmountController.text.trim()) ?? 0.0,
+      );
+
+      log('PDF generated successfully (${pdfBytes.length} bytes)');
+
+      // Show PDF viewer
+      Get.to(
+        () => PdfViewerWidget(
+          pdfBytes: pdfBytes,
+          title: 'Patient Booking Confirmation - ${nameController.text.trim()}',
+        ),
+      );
+    } catch (e) {
+      log('❌ Error generating PDF: $e');
+      Get.snackbar(
+        'PDF Generation Error',
+        'Failed to generate PDF: ${e.toString()}',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+      );
     }
   }
 
